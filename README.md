@@ -1,11 +1,11 @@
-# Lambda Utils
+# Lambda Utils [![Build Status](https://travis-ci.org/developerDemetri/lambda-utils.svg?branch=master)](https://travis-ci.org/developerDemetri/lambda-utils) 
+
 Useful little Lambda collection
 
 
 ## Developer Setup
 1) Ensure you're running Python 3.7.x ([pyenv](https://github.com/pyenv/pyenv/blob/master/README.md) is suggested for managing Python versions)
 2) Run `pip install requirements.txt` to install testing requirements
-3) Install Lambda specific `requirements.txt` as needed
 
 
 ## Repository Structure
