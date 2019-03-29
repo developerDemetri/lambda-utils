@@ -1,9 +1,9 @@
-from . import index
-
 import pytest
 from flexmock import flexmock
 import requests
 from requests.exceptions import HTTPError
+
+from . import index
 
 FAKE_URI = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=GDDY&apikey=demo"
 

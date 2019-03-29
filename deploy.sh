@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-DISABLE_LIST="W0613,C0111"
+DISABLE_LIST="W0613,C0111,W1202,W1308"
 
 for LAMBDA in $(ls -d */ | cut -f1 -d"/");
 do
