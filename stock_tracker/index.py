@@ -47,9 +47,9 @@ def stock_tracker_handler(event, context):
     stock_change_percent = abs(float(stock_info["10. change percent"].rstrip("%")))
     LOGGER.debug("Successfully parsed lastest stock info for {}.".format(stock_symbol))
 
-    result = "{}: {:.2f} {}{:.2f} ({}{:.2f}%)".format(stock_symbol, stock_price,
-                                                      stock_change_symbol, abs(stock_change),
-                                                      stock_change_symbol, stock_change_percent)
+    result = "{}: ${:.2f} {}${:.2f} ({}{:.2f}%)".format(stock_symbol, stock_price,
+                                                        stock_change_symbol, abs(stock_change),
+                                                        stock_change_symbol, stock_change_percent)
     LOGGER.info(result)
 
     LOGGER.debug("Sending result to SNS Topic: {}...")

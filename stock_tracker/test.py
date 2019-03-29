@@ -52,7 +52,7 @@ def test_stock_tracker_handler():
     }).once()
     flexmock(requests).should_receive("get").with_args(FAKE_URI).and_return(fake_req).once()
 
-    expected_result = "GDDY: 75.11 +0.90 (+1.21%)"
+    expected_result = "GDDY: $75.11 +$0.90 (+1.21%)"
 
     fake_client = flexmock()
     fake_client.should_receive("publish").with_args(
@@ -64,4 +64,4 @@ def test_stock_tracker_handler():
     fake_context = flexmock(
         invoked_function_arn="arn:aws:lambda:us-west-2:123456789:function:demo"
     )
-    assert index.stock_tracker_handler(event, fake_context) == "GDDY: 75.11 +0.90 (+1.21%)"
+    assert index.stock_tracker_handler(event, fake_context) == expected_result
