@@ -5,17 +5,16 @@ import re
 import boto3
 import requests
 
+IS_DEBUGGING = str(os.environ.get("DEBUGGING", "no")).strip().lower() == "yes"
+LOGGER = logging.getLogger()
+LOGGER.setLevel(logging.DEBUG if IS_DEBUGGING else logging.INFO)
+LOGGER.debug("Loading lambda...")
+
 AWS_REGION = str(os.environ.get("AWS_REGION", "us-west-2")).strip()
-IS_DEBUGGING = "debugging" in os.environ and os.environ["debugging"] == "yes"
 AV_API_KEY = str(os.environ.get("ALPHA_VANTAGE_KEY", "demo")).strip()
 AV_URI = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={}&apikey={}"
 SNS_TOPIC = str(os.environ.get("SNS_TOPIC", "demo")).strip()
 TICKER_RE = re.compile("^[A-Z]{1,5}$")
-
-logging.basicConfig(level=logging.DEBUG if IS_DEBUGGING else logging.INFO,
-                    format="%(asctime)s %(levelname)-8s %(message)s")
-LOGGER = logging.getLogger()
-LOGGER.debug("Loading lambda...")
 
 
 def stock_tracker_handler(event, context):
