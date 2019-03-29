@@ -10,6 +10,6 @@ LOGGER.debug("Loading lambda...")
 
 
 def hello_world_handler(event, context):
-    LOGGER.debug("Running hello world...")
+    LOGGER.info("Running hello world...")
     LOGGER.info("Hello World!")
-    LOGGER.debug("Successfully ran hello world.")
+    LOGGER.info("Successfully ran hello world.")
