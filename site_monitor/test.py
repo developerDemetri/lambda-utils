@@ -41,36 +41,36 @@ def test_save_stats():
     fake_client = flexmock()
     fake_client.should_receive("update_item").with_args(
         TableName="demo",
-        Key={"N": 1},
-        UpdateExpression="SET is_down = :d",
-        ExpressionAttributeNames={":d": True}
+        Key={"site_id": {"N": "1"}},
+        UpdateExpression="SET is_down = :val",
+        ExpressionAttributeValues={":val": {"BOOL": True}}
     ).once()
     fake_client.should_receive("update_item").with_args(
         TableName="demo",
-        Key={"N": 2},
-        UpdateExpression="SET is_down = :d",
-        ExpressionAttributeNames={":d": False}
+        Key={"site_id": {"N": "2"}},
+        UpdateExpression="SET is_down = :val",
+        ExpressionAttributeValues={":val": {"BOOL": False}}
     ).once()
     fake_client.should_receive("put_item").with_args(
         TableName="demo",
         Item={
-            "site_id": {"N": 1},
+            "site_id": {"N": "1"},
             "site_name": {"S": "mock.io"},
             "timestamp": {"S": "2019-03-29T13:05:38.876628"},
             "is_down": {"BOOL": True},
-            "response_code": {"N": 418},
-            "response_time": {"N": 100}
+            "response_code": {"N": "418"},
+            "response_time": {"N": "100"}
         }
     ).once()
     fake_client.should_receive("put_item").with_args(
         TableName="demo",
         Item={
-            "site_id": {"N": 2},
+            "site_id": {"N": "2"},
             "site_name": {"S": "mock.com"},
             "timestamp": {"S": "2019-03-29T13:06:12.102297"},
             "is_down": {"BOOL": False},
-            "response_code": {"N": 200},
-            "response_time": {"N": 50}
+            "response_code": {"N": "200"},
+            "response_time": {"N": "50"}
         }
     ).once()
 

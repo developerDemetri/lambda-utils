@@ -35,21 +35,21 @@ def save_stats(dynamo_client, sites):
         LOGGER.info("Saving info in Dynamo for {}...".format(site["name"]))
         dynamo_client.update_item(
             TableName=SITE_DYNAMO_TABLE,
-            Key={"N": site["id"]},
-            UpdateExpression="SET is_down = :d",
-            ExpressionAttributeNames={":d": site["is_down"]}
+            Key={"site_id": {"N": str(site["id"])}},
+            UpdateExpression="SET is_down = :val",
+            ExpressionAttributeValues={":val": {"BOOL": site["is_down"]}}
         )
         LOGGER.debug("Successfully updated Site table for {}.".format(site["name"]))
 
         dynamo_client.put_item(
             TableName=STATS_DYNAMO_TABLE,
             Item={
-                "site_id": {"N": site["id"]},
+                "site_id": {"N": str(site["id"])},
                 "site_name": {"S": site["name"]},
                 "timestamp": {"S": site["check_time"]},
                 "is_down": {"BOOL": site["is_down"]},
-                "response_code": {"N": site["response_code"]},
-                "response_time": {"N": site["response_time"]}
+                "response_code": {"N": str(site["response_code"])},
+                "response_time": {"N": str(site["response_time"])}
             }
         )
         LOGGER.debug("Successfully updated Stats table for {}.".format(site["name"]))
@@ -84,8 +84,8 @@ def site_monitor_handler(event, context):
     for site in sites:
         already_down = site["is_down"]
         site["check_time"] = datetime.now().isoformat()
-        resp = requests.get("https://{}".format(site))
-        site["is_down"] = bool(resp.status_code == 200)
+        resp = requests.get("https://{}".format(site["name"]))
+        site["is_down"] = bool(resp.status_code != 200)
         site["response_code"] = int(resp.status_code)
         site["response_time"] = float(resp.elapsed.total_seconds())
         LOGGER.debug(str(site))
