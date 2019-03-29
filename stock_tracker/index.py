@@ -33,6 +33,10 @@ def stock_tracker_handler(event, context):
 
     LOGGER.debug("Parsing lastest stock info for {}...".format(stock_symbol))
     stock_info = stock_req.json()["Global Quote"]
+    if stock_info is None or not bool(stock_info):
+        err_msg = "Alphavantage returned empty response!"
+        LOGGER.error(err_msg)
+        raise ValueError(err_msg)
     stock_price = float(stock_info["05. price"])
     stock_change = float(stock_info["09. change"])
     stock_change_symbol = "-" if stock_change < 0 else "+"

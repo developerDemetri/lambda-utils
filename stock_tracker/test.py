@@ -21,6 +21,17 @@ def test_stock_tracker_handler_bad_resp():
     with pytest.raises(HTTPError):
         index.stock_tracker_handler(event, None)
 
+def test_stock_tracker_handler_empty_resp():
+    event = {"symbol": "gddy"}
+    fake_req = flexmock(ok=True, status_code=200)
+    fake_req.should_receive("json").and_return({
+        "Global Quote": {}
+    }).once()
+    flexmock(requests).should_receive("get").with_args(FAKE_URI).and_return(fake_req).once()
+
+    with pytest.raises(ValueError):
+        index.stock_tracker_handler(event, None)
+
 def test_stock_tracker_handler():
     event = {"symbol": "gddy"}
     fake_req = flexmock(ok=True, status_code=200)
