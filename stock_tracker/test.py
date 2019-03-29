@@ -1,5 +1,6 @@
-import pytest
+import boto3
 from flexmock import flexmock
+import pytest
 import requests
 from requests.exceptions import HTTPError
 
@@ -51,4 +52,16 @@ def test_stock_tracker_handler():
     }).once()
     flexmock(requests).should_receive("get").with_args(FAKE_URI).and_return(fake_req).once()
 
-    assert index.stock_tracker_handler(event, None) == "GDDY: 75.11 +0.90 (+1.21%)"
+    expected_result = "GDDY: 75.11 +0.90 (+1.21%)"
+
+    fake_client = flexmock()
+    fake_client.should_receive("publish").with_args(
+        TopicArn="arn:aws:sns:us-west-2:123456789:demo",
+        Message=expected_result
+    ).once()
+    flexmock(boto3).should_receive("client").with_args("sns").and_return(fake_client).once()
+
+    fake_context = flexmock(
+        invoked_function_arn="arn:aws:lambda:us-west-2:123456789:function:demo"
+    )
+    assert index.stock_tracker_handler(event, fake_context) == "GDDY: 75.11 +0.90 (+1.21%)"

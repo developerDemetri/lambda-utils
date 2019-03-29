@@ -10,7 +10,7 @@ do
         pylint --disable=$DISABLE_LIST $LAMBDA
         echo "Testing Lambda $LAMBDA..."
         pushd $LAMBDA
-        pytest test.py
+        pytest test.py -W ignore::DeprecationWarning
         echo "Building Lambda $LAMBDA..."
         mkdir build
         pip install -r requirements.txt --target build

@@ -1,11 +1,15 @@
 import logging
 import os
 import re
+
+import boto3
 import requests
 
+AWS_REGION = str(os.environ.get("AWS_REGION", "us-west-2")).strip()
 IS_DEBUGGING = "debugging" in os.environ and os.environ["debugging"] == "yes"
 AV_API_KEY = str(os.environ.get("ALPHA_VANTAGE_KEY", "demo")).strip()
 AV_URI = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={}&apikey={}"
+SNS_TOPIC = str(os.environ.get("SNS_TOPIC", "demo")).strip()
 TICKER_RE = re.compile("^[A-Z]{1,5}$")
 
 logging.basicConfig(level=logging.DEBUG if IS_DEBUGGING else logging.INFO,
@@ -47,4 +51,14 @@ def stock_tracker_handler(event, context):
                                                       stock_change_symbol, abs(stock_change),
                                                       stock_change_symbol, stock_change_percent)
     LOGGER.info(result)
+
+    LOGGER.debug("Sending result to SNS Topic: {}...")
+    account_id = context.invoked_function_arn.split(":")[4]
+    sns_client = boto3.client("sns")
+    sns_client.publish(
+        TopicArn="arn:aws:sns:{}:{}:{}".format(AWS_REGION, account_id, SNS_TOPIC),
+        Message=result
+    )
+    LOGGER.info("Successfully sent result to SNS Topic: {}.")
+
     return result
