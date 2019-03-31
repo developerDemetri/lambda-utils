@@ -55,7 +55,7 @@ Resources:
           - !Ref AWS::NoValue
       BillingMode: PROVISIONED
       KeySchema:
-        - AttributeName: PrimaryKeyName
+        - AttributeName: !Ref PrimaryKeyName
           KeyType: HASH
         - !If
           - UsingRangeKey
