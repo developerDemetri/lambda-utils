@@ -10,7 +10,7 @@ Useful little Lambda collection
 
 ## Repository Structure
 
-Each directory is the name of the Lambda Function that it contains.
+Each directory under [`functions`](https://github.com/developerDemetri/lambda-utils/tree/master/functions) is the name of the Lambda Function that it contains.
 
 Each Lambda has:
 
@@ -28,3 +28,5 @@ lambda_func
 ├── requirements.txt
 └── test.py
 ```
+
+The [`sceptre`](https://github.com/developerDemetri/lambda-utils/tree/master/sceptre) directory contains a [Sceptre](https://sceptre.cloudreach.com/latest/about.html) setup for orchestrating AWS Resources.
