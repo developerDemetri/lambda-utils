@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Lambda Function
+Parameters:
+  FunctionName:
+    Type: String
+    Description: Name for Function
+  HandlerName:
+    Type: String
+    Description: Handler for Function
+  ProjectCode:
+    Type: String
+    Description: Project to tag the Bucket under
+  CustomIAMPolicyName:
+    Type: String
+    Description: Name of custom IAM Policy to add to standard Function Role
+    Default: ""
+  MemorySize:
+    Type: Number
+    Description: Memory for Function
+    Default: 128
+    MinValue: 128
+    MaxValue: 1024
+  Timeout:
+    Type: Number
+    Description: Memory for Function
+    Default: 180
+    MinValue: 30
+    MaxValue: 300
+  BucketNameFromSSM:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: SSM Parameter to pull desired bucket name
+    Default: /LambdaUtils/BucketName
+Conditions:
+  NeedCustomPolicy: !Not [ !Equals [ !Ref CustomIAMPolicyName, "" ] ]
+Resources:
+  FunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        !If
+          - NeedCustomPolicy
+          - - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+            - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+            - !Sub arn:aws:iam::${AWS::AccountId}:policy/${CustomIAMPolicyName}
+          - - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+            - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      RoleName: !Sub ${FunctionName}LambdaRole
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BucketNameFromSSM
+        S3Key: !Sub ${FunctionName}.zip
+      FunctionName: !Ref FunctionName
+      Handler: !Sub index.${HandlerName}
+      MemorySize: !Ref MemorySize
+      Role: !GetAtt FunctionRole.Arn
+      Runtime: python3.7
+      Timeout: !Ref Timeout
+      TracingConfig:
+        Mode: Active
+      Tags:
+        - Key: project
+          Value: !Ref ProjectCode
+    DependsOn:
+      - FunctionRole
