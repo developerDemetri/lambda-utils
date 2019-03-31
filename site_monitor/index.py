@@ -55,9 +55,10 @@ def save_stats(dynamo_client, sites):
         LOGGER.debug("Successfully updated Stats table for {}.".format(site["name"]))
     LOGGER.info("Successfully saved all Site info in Dynamo.")
 
-def send_alert(sns_client, account_id, down_site_list):
+def send_alert(account_id, down_site_list):
     if down_site_list:
         LOGGER.debug("Down Site List: {}".format(down_site_list))
+        sns_client = boto3.client("sns")
         LOGGER.warning("Alerting for {} site(s) down...".format(len(down_site_list)))
         message_parts = ["The following site(s) returned unhealthy responses:"]
         for site_info in down_site_list:
@@ -77,7 +78,6 @@ def send_alert(sns_client, account_id, down_site_list):
 def site_monitor_handler(event, context):
     LOGGER.debug("Running site monitor...")
     dynamo_client = boto3.client("dynamodb")
-    sns_client = boto3.client("sns")
 
     crashed_sites = []
     sites = get_sites(dynamo_client)
@@ -95,5 +95,5 @@ def site_monitor_handler(event, context):
 
     account_id = context.invoked_function_arn.split(":")[4]
     save_stats(dynamo_client, sites)
-    send_alert(sns_client, account_id, crashed_sites)
+    send_alert(account_id, crashed_sites)
     LOGGER.info("Successfully ran site monitor.")

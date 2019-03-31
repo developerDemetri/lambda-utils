@@ -1,6 +1,8 @@
 import copy
 
+import boto3
 from flexmock import flexmock
+import requests
 
 from . import index
 
@@ -27,15 +29,15 @@ STAT_LIST[1]["response_time"] = 50
 
 
 def test_get_sites():
-    mock = flexmock()
-    mock.should_receive("scan").with_args(TableName="demo", ConsistentRead=True).and_return({
-        "Items": [
-            {"is_down": {"BOOL": True}, "site_id": {"N": "1"}, "site_name": {"S": "mock.io"}},
-            {"is_down": {"BOOL": False}, "site_id": {"N": "2"}, "site_name": {"S": "mock.com"}}
-        ]
-    }).once()
+    fake_client = flexmock()
+    fake_client.should_receive("scan").with_args(
+        TableName="demo", ConsistentRead=True
+    ).and_return({"Items": [
+        {"is_down": {"BOOL": True}, "site_id": {"N": "1"}, "site_name": {"S": "mock.io"}},
+        {"is_down": {"BOOL": False}, "site_id": {"N": "2"}, "site_name": {"S": "mock.com"}}
+    ]}).once()
 
-    assert index.get_sites(mock) == SITE_LIST
+    assert index.get_sites(fake_client) == SITE_LIST
 
 def test_save_stats():
     fake_client = flexmock()
@@ -87,6 +89,27 @@ def test_send_alert():
             "DeveloperDemetri Site Monitor"
         ])
     ).once()
+    flexmock(boto3).should_receive("client").with_args("sns").and_return(fake_client).once()
 
-    index.send_alert(fake_client, "123456789", [STAT_LIST[0]])
-    index.send_alert(fake_client, "123456789", [])
+    index.send_alert("123456789", [STAT_LIST[0]])
+    index.send_alert("123456789", [])
+
+def test_site_monitor_handler():
+    mock = flexmock()
+    mock.should_receive("total_seconds").and_return(100).and_return(50).twice()
+    flexmock(boto3).should_receive("client").with_args("dynamodb").and_return(mock).once()
+    flexmock(index).should_receive("get_sites").with_args(mock).and_return(SITE_LIST).once()
+    bad_resp = flexmock(status_code=418, elapsed=mock)
+    good_resp = flexmock(status_code=200, elapsed=mock)
+    flexmock(requests).should_receive("get").with_args("https://mock.io")\
+                                            .and_return(bad_resp).once()
+    flexmock(requests).should_receive("get").with_args("https://mock.com")\
+                                            .and_return(good_resp).once()
+    flexmock(index).should_receive("save_stats").and_return(None).once()
+    flexmock(index).should_receive("send_alert")\
+                   .with_args("123456789", list()).and_return(None).once()
+
+    fake_context = flexmock(
+        invoked_function_arn="arn:aws:lambda:us-west-2:123456789:function:demo"
+    )
+    assert index.site_monitor_handler(dict(), fake_context) is None
