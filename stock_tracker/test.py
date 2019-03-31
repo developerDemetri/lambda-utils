@@ -24,7 +24,7 @@ def test_get_symbols():
         region_name="us-west-2"
     ).and_return(fake_client).once()
 
-    assert index.get_stock_symbols() == ["amzn", "msft"]
+    assert index.get_stock_symbols() == ["AMZN", "MSFT"]
 
 def test_send_results():
     fake_client = flexmock()

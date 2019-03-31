@@ -22,7 +22,7 @@ def get_stock_symbols():
     ssm_client = boto3.client("ssm", region_name=AWS_REGION)
     symbols = []
     for symbol in ssm_client.get_parameter(Name=SYMBOLS_PARAM)["Parameter"]["Value"].split(","):
-        symbols.append(symbol.strip())
+        symbols.append(symbol.strip().upper())
     return symbols
 
 def send_results(results, account_id):
