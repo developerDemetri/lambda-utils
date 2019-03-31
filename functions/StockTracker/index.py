@@ -31,7 +31,7 @@ def send_results(results, account_id):
         sns_client = boto3.client("sns")
         sns_client.publish(
             TopicArn="arn:aws:sns:{}:{}:{}".format(AWS_REGION, account_id, SNS_TOPIC),
-            Message="\n".join(results)
+            Message="\n{}".format("\n".join(results))
         )
         LOGGER.info("Successfully sent results to SNS Topic: {}.")
     else:
