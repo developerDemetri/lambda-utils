@@ -1,0 +1,4 @@
+template_path: bucket.yaml
+parameters:
+  BucketNameFromSSM: /LambdaUtils/BucketName
+  ProjectCode: {{ stack_group_config.project_code }}
