@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Scheduled CloudWatch Event Rule
+Parameters:
+  FunctionName:
+    Type: String
+    Description: Name for Function
+  CronExpression:
+    Type: String
+    Description: Cron Schedule Expression
+Resources:
+  Rule:
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: !Sub Scheduled Event for ${FunctionName} Lambda
+      Name: !Sub ${FunctionName}Cron
+      ScheduleExpression: !Sub cron(${CronExpression})
+      State: ENABLED
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FunctionName}
+          Id: !Ref FunctionName

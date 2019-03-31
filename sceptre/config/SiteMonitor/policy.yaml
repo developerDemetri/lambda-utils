@@ -1,3 +1,7 @@
 template_path: policy.yaml
 parameters:
   FunctionName: SiteMonitor
+dependencies:
+  - SiteMonitor/topic.yaml
+  - SiteMonitor/list-dynamo.yaml
+  - SiteMonitor/stats-dynamo.yaml

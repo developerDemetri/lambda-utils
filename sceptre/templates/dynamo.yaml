@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Dynamo Table
+Parameters:
+  TableName:
+    Type: String
+    Description: Name of Dynamo Table
+  PrimaryKeyName:
+    Type: String
+    Description: Name of primary hash key
+  PrimaryKeyType:
+    Type: String
+    Description: Type of primary hash key
+    AllowedValues:
+      - N
+      - S
+  RangeKeyName:
+    Type: String
+    Description: Name of range key if used
+    Default: ""
+  RangeKeyType:
+    Type: String
+    Description: Type of range key if used
+    Default: N
+    AllowedValues:
+      - N
+      - S
+  ReadCapacity:
+    Type: Number
+    Description: RCUs for Table
+    Default: 5
+    MinValue: 5
+    MaxValue: 10
+  WriteCapacity:
+    Type: Number
+    Description: WCUs for Table
+    Default: 5
+    MinValue: 5
+    MaxValue: 10
+  ProjectCode:
+    Type: String
+    Description: Project to tag the Bucket under
+Conditions:
+  UsingRangeKey: !Not [ !Equals [ !Ref RangeKeyName, "" ] ]
+Resources:
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: !Ref PrimaryKeyName
+          AttributeType: !Ref PrimaryKeyType
+        - !If
+          - UsingRangeKey
+          - AttributeName: !Ref RangeKeyName
+            AttributeType: !Ref RangeKeyType
+          - !Ref AWS::NoValue
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: PrimaryKeyName
+          KeyType: HASH
+        - !If
+          - UsingRangeKey
+          - AttributeName: !Ref RangeKeyName
+            KeyType: RANGE
+          - !Ref AWS::NoValue
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref ReadCapacity
+        WriteCapacityUnits: !Ref WriteCapacity
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Ref TableName
+      Tags: 
+        - Key: project
+          Value: !Ref ProjectCode

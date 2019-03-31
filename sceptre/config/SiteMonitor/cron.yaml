@@ -1,0 +1,6 @@
+template_path: cron.yaml
+parameters:
+  FunctionName: SiteMonitor
+  CronExpression: "* * * * ? *"
+dependencies:
+  - SiteMonitor/lambda.yaml

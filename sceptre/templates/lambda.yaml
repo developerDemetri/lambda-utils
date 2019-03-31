@@ -49,13 +49,12 @@ Resources:
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
-        !If
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - !If
           - NeedCustomPolicy
-          - - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-            - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-            - !Sub arn:aws:iam::${AWS::AccountId}:policy/${FunctionName}LambdaPolicy
-          - - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-            - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+          - !Sub arn:aws:iam::${AWS::AccountId}:policy/${FunctionName}LambdaPolicy
+          - !Ref AWS::NoValue
       RoleName: !Sub ${FunctionName}LambdaRole
   Function:
     Type: AWS::Lambda::Function

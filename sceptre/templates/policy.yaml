@@ -20,15 +20,15 @@ Resources:
             Action:
               - dynamodb:Scan
               - dynamodb:UpdateItem
-            Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/site_list
+            Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SiteList
           - Effect: Allow
             Action:
               - dynamodb:PutItem
-            Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/site_stats
+            Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SiteStats
           - Effect: Allow
             Action:
               - sns:Publish
-            Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:site_down
+            Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:SitesDown
       ManagedPolicyName: !Sub ${FunctionName}LambdaPolicy
   StockTrackerPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -45,5 +45,5 @@ Resources:
           - Effect: Allow
             Action:
               - sns:Publish
-            Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:stock_updates
+            Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:StockUpdates
       ManagedPolicyName: !Sub ${FunctionName}LambdaPolicy
