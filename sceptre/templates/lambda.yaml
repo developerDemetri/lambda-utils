@@ -10,10 +10,13 @@ Parameters:
   ProjectCode:
     Type: String
     Description: Project to tag the Bucket under
-  CustomIAMPolicyName:
+  UseCustomIAMPolicy:
     Type: String
-    Description: Name of custom IAM Policy to add to standard Function Role
-    Default: ""
+    Description: true if a Custom IAM Policy is needed
+    Default: false
+    AllowedValues:
+      - false
+      - true
   MemorySize:
     Type: Number
     Description: Memory for Function
@@ -31,7 +34,7 @@ Parameters:
     Description: SSM Parameter to pull desired bucket name
     Default: /LambdaUtils/BucketName
 Conditions:
-  NeedCustomPolicy: !Not [ !Equals [ !Ref CustomIAMPolicyName, "" ] ]
+  NeedCustomPolicy: !Equals [ !Ref UseCustomIAMPolicy, true ]
 Resources:
   FunctionRole:
     Type: AWS::IAM::Role
@@ -50,7 +53,7 @@ Resources:
           - NeedCustomPolicy
           - - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
             - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-            - !Sub arn:aws:iam::${AWS::AccountId}:policy/${CustomIAMPolicyName}
+            - !Sub arn:aws:iam::${AWS::AccountId}:policy/${FunctionName}LambdaPolicy
           - - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
             - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       RoleName: !Sub ${FunctionName}LambdaRole

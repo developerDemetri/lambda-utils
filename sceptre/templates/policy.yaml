@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Custom IAM Policy for Lambda
+Parameters:
+  FunctionName:
+    Type: String
+    Description: Name of Lambda Function
+Conditions:
+  IsSiteMonitor: !Equals [ !Ref FunctionName, SiteMonitor ]
+  IsStockTracker: !Equals [ !Ref FunctionName, StockTracker ]
+Resources:
+  SiteMonitorPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Condition: IsSiteMonitor
+    Properties:
+      Description: !Sub Custom Policy for ${FunctionName} Lambda
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+            Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/site_list
+          - Effect: Allow
+            Action:
+              - dynamodb:PutItem
+            Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/site_stats
+          - Effect: Allow
+            Action:
+              - sns:Publish
+            Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:site_down
+      ManagedPolicyName: !Sub ${FunctionName}LambdaPolicy
+  StockTrackerPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Condition: IsStockTracker
+    Properties:
+      Description: !Sub Custom Policy for ${FunctionName} Lambda
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/StockTracker/Symbols
+          - Effect: Allow
+            Action:
+              - sns:Publish
+            Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:stock_updates
+      ManagedPolicyName: !Sub ${FunctionName}LambdaPolicy

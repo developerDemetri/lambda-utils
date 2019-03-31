@@ -4,3 +4,6 @@ parameters:
   HandlerName: site_monitor_handler
   Timeout: "60"
   ProjectCode: {{ stack_group_config.project_code }}
+  UseCustomIAMPolicy: "true"
+dependencies:
+  - SiteMonitor/policy.yaml
