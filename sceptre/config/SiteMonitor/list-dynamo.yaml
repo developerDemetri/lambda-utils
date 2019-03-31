@@ -1,0 +1,6 @@
+template_path: dynamo.yaml
+parameters:
+  TableName: SiteList
+  PrimaryKeyName: site_id
+  PrimaryKeyType: N
+  ProjectCode: {{ stack_group_config.project_code }}

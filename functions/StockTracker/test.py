@@ -30,7 +30,7 @@ def test_send_results():
     fake_client = flexmock()
     fake_client.should_receive("publish").with_args(
         TopicArn="arn:aws:sns:us-west-2:123456789:demo",
-        Message="\n".join(EXPECTED_RESULTS)
+        Message="\n{}".format("\n".join(EXPECTED_RESULTS))
     ).once()
     flexmock(boto3).should_receive("client").with_args("sns").and_return(fake_client).once()
 

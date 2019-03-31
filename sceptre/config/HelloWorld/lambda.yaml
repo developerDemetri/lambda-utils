@@ -1,0 +1,6 @@
+template_path: lambda.yaml
+parameters:
+  FunctionName: HelloWorld
+  HandlerName: hello_world_handler
+  Timeout: "30"
+  ProjectCode: {{ stack_group_config.project_code }}

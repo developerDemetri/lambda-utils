@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Private S3 Bucket
+Parameters:
+  BucketNameFromSSM:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: SSM Parameter to pull desired bucket name
+    Default: /LambdaUtils/BucketName
+  OldVersionExpirationDays:
+    Type: Number
+    Description: Days to keep old object versions
+    Default: 90
+  ProjectCode:
+    Type: String
+    Description: Project to tag the Bucket under
+  AccessLogsBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: SSM Parameter to pull dedicated access logs Bucket name
+    Default: AccessLogsBucket
+    AllowedValues:
+      - AccessLogsBucket
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Ref BucketNameFromSSM
+      LifecycleConfiguration:
+        Rules:
+          - NoncurrentVersionExpirationInDays: !Ref OldVersionExpirationDays
+            Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref AccessLogsBucket
+        LogFilePrefix: !Sub s3/${BucketNameFromSSM}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: project
+          Value: !Ref ProjectCode
+      VersioningConfiguration:
+        Status: Enabled
+Outputs:
+  BucketName:
+    Description: Name of created Bucket
+    Value: !Ref Bucket

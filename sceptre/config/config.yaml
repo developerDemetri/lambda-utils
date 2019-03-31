@@ -1,0 +1,2 @@
+project_code: lambda-utils
+region: {{ environment_variable.AWS_DEFAULT_REGION }}

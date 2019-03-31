@@ -1,0 +1,8 @@
+template_path: dynamo.yaml
+parameters:
+  TableName: SiteStats
+  PrimaryKeyName: site_id
+  PrimaryKeyType: N
+  RangeKeyName: timestamp
+  RangeKeyType: S
+  ProjectCode: {{ stack_group_config.project_code }}

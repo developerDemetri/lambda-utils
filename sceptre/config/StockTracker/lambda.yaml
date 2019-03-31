@@ -1,0 +1,9 @@
+template_path: lambda.yaml
+parameters:
+  FunctionName: StockTracker
+  HandlerName: stock_tracker_handler
+  Timeout: "60"
+  ProjectCode: {{ stack_group_config.project_code }}
+  UseCustomIAMPolicy: "true"
+dependencies:
+  - StockTracker/policy.yaml
