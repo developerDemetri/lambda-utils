@@ -34,7 +34,7 @@ Resources:
             Status: Enabled
       LoggingConfiguration:
         DestinationBucketName: !Ref AccessLogsBucket
-        LogFilePrefix: !Sub s3/${BucketNameFromSSM}
+        LogFilePrefix: !Sub s3/${BucketNameFromSSM}/
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
