@@ -33,6 +33,9 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Description: SSM Parameter to pull desired bucket name
     Default: /LambdaUtils/BucketName
+  AlarmTopicName:
+    Type: String
+    Description: SNS Topic for CW Alarms
 Conditions:
   NeedCustomPolicy: !Equals [ !Ref UseCustomIAMPolicy, true ]
 Resources:
@@ -75,3 +78,25 @@ Resources:
           Value: !Ref ProjectCode
     DependsOn:
       - FunctionRole
+  FunctionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmTopicName}
+      AlarmDescription: !Sub Alert on failures of ${FunctionName} Lambda
+      AlarmName: !Sub ${FunctionName}FailureAlarm
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref FunctionName
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
+    DependsOn:
+      - Function

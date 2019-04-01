@@ -4,3 +4,4 @@ parameters:
   HandlerName: hello_world_handler
   Timeout: "30"
   ProjectCode: {{ stack_group_config.project_code }}
+  AlarmTopicName: {{ stack_group_config.project_alert_topic }}
