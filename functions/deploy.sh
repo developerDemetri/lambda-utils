@@ -22,7 +22,7 @@ do
         if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
             echo "Publishing Lambda $LAMBDA..."
             aws s3 cp $LAMBDA.zip s3://$S3_BUCKET/$LAMBDA.zip --acl private
-            aws lambda update-function-code --function-name $LAMBDA --s3-bucket $S3_BUCKET --s3-key $LAMBDA.zip --publish
+            aws lambda update-function-code --function-name $LAMBDA --s3-bucket $S3_BUCKET --s3-key $LAMBDA.zip --publish | grep Version
         else
             echo "Just a PR, skipping Publish."
         fi

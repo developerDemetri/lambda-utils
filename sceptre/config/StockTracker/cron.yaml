@@ -2,5 +2,6 @@ template_path: cron.yaml
 parameters:
   FunctionName: StockTracker
   CronExpression: "2 14,17,20 ? * MON-FRI *"
+  AlarmTopicName: {{ stack_group_config.project_alert_topic }}
 dependencies:
   - StockTracker/lambda.yaml

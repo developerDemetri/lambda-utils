@@ -1,0 +1,3 @@
+template_path: topic.yaml
+parameters:
+  TopicName: {{ stack_group_config.project_alert_topic }}
