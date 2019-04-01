@@ -84,7 +84,7 @@ def site_monitor_handler(event, context):
     for site in sites:
         already_down = site["is_down"]
         site["check_time"] = datetime.now().isoformat()
-        resp = requests.get("https://{}".format(site["name"]))
+        resp = requests.get("https://{}".format(site["name"]), timeout=5)
         site["is_down"] = bool(resp.status_code != 200)
         site["response_code"] = int(resp.status_code)
         site["response_time"] = float(resp.elapsed.total_seconds())

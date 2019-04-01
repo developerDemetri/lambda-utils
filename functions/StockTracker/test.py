@@ -45,7 +45,8 @@ def test_stock_tracker_handler_bad_resp():
     event = {"symbol": "gddy"}
     fake_req = flexmock(ok=False, status_code=418)
     fake_req.should_receive("raise_for_status").and_raise(HTTPError("no bueno")).once()
-    flexmock(requests).should_receive("get").with_args(FAKE_URI).and_return(fake_req).once()
+    flexmock(requests).should_receive("get").with_args(FAKE_URI,
+                                                       timeout=5).and_return(fake_req).once()
 
     with pytest.raises(HTTPError):
         index.stock_tracker_handler(event, None)
@@ -56,7 +57,8 @@ def test_stock_tracker_handler_empty_resp():
     fake_req.should_receive("json").and_return({
         "Global Quote": {}
     }).once()
-    flexmock(requests).should_receive("get").with_args(FAKE_URI).and_return(fake_req).once()
+    flexmock(requests).should_receive("get").with_args(FAKE_URI,
+                                                       timeout=5).and_return(fake_req).once()
 
     with pytest.raises(ValueError):
         index.stock_tracker_handler(event, None)
@@ -78,7 +80,8 @@ def test_stock_tracker_handler_with_event():
             "10. change percent": "1.2128%"
         }
     }).once()
-    flexmock(requests).should_receive("get").with_args(FAKE_URI).and_return(fake_req).once()
+    flexmock(requests).should_receive("get").with_args(FAKE_URI,
+                                                       timeout=5).and_return(fake_req).once()
 
     flexmock(index).should_receive("send_results").with_args(EXPECTED_RESULTS,
                                                              "123456789").and_return(None).once()

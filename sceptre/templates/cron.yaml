@@ -22,9 +22,8 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties: 
       Action: lambda:InvokeFunction
-      FunctionName: !Ref FunctionName
+      FunctionName: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FunctionName}
       Principal: events.amazonaws.com
-      SourceAccount: !Ref AWS::AccountId
       SourceArn: !GetAtt Rule.Arn
     DependsOn:
       - Rule

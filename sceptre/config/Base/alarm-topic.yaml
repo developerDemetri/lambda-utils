@@ -1,0 +1,3 @@
+template_path: topic.yaml
+parameters:
+  TopicName: LambdaUtilsAlerts

@@ -101,9 +101,9 @@ def test_site_monitor_handler():
     flexmock(index).should_receive("get_sites").with_args(mock).and_return(SITE_LIST).once()
     bad_resp = flexmock(status_code=418, elapsed=mock)
     good_resp = flexmock(status_code=200, elapsed=mock)
-    flexmock(requests).should_receive("get").with_args("https://mock.io")\
+    flexmock(requests).should_receive("get").with_args("https://mock.io", timeout=5)\
                                             .and_return(bad_resp).once()
-    flexmock(requests).should_receive("get").with_args("https://mock.com")\
+    flexmock(requests).should_receive("get").with_args("https://mock.com", timeout=5)\
                                             .and_return(good_resp).once()
     flexmock(index).should_receive("save_stats").and_return(None).once()
     flexmock(index).should_receive("send_alert")\

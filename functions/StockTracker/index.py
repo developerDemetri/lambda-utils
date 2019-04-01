@@ -54,7 +54,7 @@ def stock_tracker_handler(event, context):
         LOGGER.debug("Retrieving stock info from Alphavantage for {}...".format(stock_symbol))
         final_uri = AV_URI.format(stock_symbol, AV_API_KEY)
         LOGGER.debug("Calling {}...".format(final_uri))
-        stock_req = requests.get(final_uri)
+        stock_req = requests.get(final_uri, timeout=5)
         if not stock_req.ok:
             LOGGER.error("Alphavantage request failed with status: {}!"
                          .format(stock_req.status_code))
