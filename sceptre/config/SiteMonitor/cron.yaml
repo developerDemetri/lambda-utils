@@ -2,5 +2,6 @@ template_path: cron.yaml
 parameters:
   FunctionName: SiteMonitor
   CronExpression: "* * * * ? *"
+  AlarmTopicName: {{ stack_group_config.project_alert_topic }}
 dependencies:
   - SiteMonitor/lambda.yaml

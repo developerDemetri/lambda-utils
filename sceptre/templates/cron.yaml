@@ -7,6 +7,9 @@ Parameters:
   CronExpression:
     Type: String
     Description: Cron Schedule Expression
+  AlarmTopicName:
+    Type: String
+    Description: SNS Topic for CW Alarms
 Resources:
   Rule:
     Type: AWS::Events::Rule
@@ -25,5 +28,27 @@ Resources:
       FunctionName: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FunctionName}
       Principal: events.amazonaws.com
       SourceArn: !GetAtt Rule.Arn
+    DependsOn:
+      - Rule
+  CronAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmTopicName}
+      AlarmDescription: !Sub Alert on failures to invoke ${FunctionName} Lambda via cron
+      AlarmName: !Sub ${FunctionName}CronFailureAlarm
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: RuleName
+          Value: !Sub ${FunctionName}Cron
+      EvaluationPeriods: 1
+      MetricName: FailedInvocations
+      Namespace: AWS/Events
+      Period: 60
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
     DependsOn:
       - Rule
