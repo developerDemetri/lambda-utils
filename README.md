@@ -1,4 +1,4 @@
-# Lambda Utils [![Build Status](https://travis-ci.org/developerDemetri/lambda-utils.svg?branch=master)](https://travis-ci.org/developerDemetri/lambda-utils) 
+# Lambda Utils [![Build Status](https://travis-ci.org/developerDemetri/lambda-utils.svg?branch=master)](https://travis-ci.org/developerDemetri/lambda-utils) [![Known Vulnerabilities](https://snyk.io/test/github/developerDemetri/lambda-utils/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/developerDemetri/lambda-utils?targetFile=requirements.txt)
 
 Useful little Lambda collection
 
