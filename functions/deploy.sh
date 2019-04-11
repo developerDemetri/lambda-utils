@@ -7,7 +7,7 @@ echo "Linting Lambdas..."
 pylint --disable=$DISABLE_LIST src
 
 echo "Testing Lambdas..."
-python -m pytest test -W ignore::DeprecationWarning
+python -m pytest --cov=src test -W ignore::DeprecationWarning
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     pushd src
