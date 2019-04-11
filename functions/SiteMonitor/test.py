@@ -3,6 +3,7 @@ import copy
 import boto3
 from flexmock import flexmock
 import requests
+from requests.exceptions import ReadTimeout
 
 from . import index
 
@@ -22,10 +23,10 @@ SITE_LIST = [
 STAT_LIST = copy.deepcopy(SITE_LIST)
 STAT_LIST[0]["check_time"] = "2019-03-29T13:05:38.876628"
 STAT_LIST[0]["response_code"] = 418
-STAT_LIST[0]["response_time"] = 100
+STAT_LIST[0]["response_time"] = 0.1
 STAT_LIST[1]["check_time"] = "2019-03-29T13:06:12.102297"
 STAT_LIST[1]["response_code"] = 200
-STAT_LIST[1]["response_time"] = 50
+STAT_LIST[1]["response_time"] = 0.5
 
 
 def test_get_sites():
@@ -61,7 +62,7 @@ def test_save_stats():
             "timestamp": {"S": "2019-03-29T13:05:38.876628"},
             "is_down": {"BOOL": True},
             "response_code": {"N": "418"},
-            "response_time": {"N": "100"}
+            "response_time": {"N": "0.1"}
         }
     ).once()
     fake_client.should_receive("put_item").with_args(
@@ -72,7 +73,7 @@ def test_save_stats():
             "timestamp": {"S": "2019-03-29T13:06:12.102297"},
             "is_down": {"BOOL": False},
             "response_code": {"N": "200"},
-            "response_time": {"N": "50"}
+            "response_time": {"N": "0.5"}
         }
     ).once()
 
@@ -96,20 +97,20 @@ def test_send_alert():
 
 def test_site_monitor_handler():
     mock = flexmock()
-    mock.should_receive("total_seconds").and_return(100).and_return(50).twice()
-    flexmock(boto3).should_receive("client").with_args("dynamodb").and_return(mock).once()
-    flexmock(index).should_receive("get_sites").with_args(mock).and_return(SITE_LIST).once()
+    mock.should_receive("total_seconds").and_return(0.1).and_return(0.5).and_return(0.5).times(3)
+    flexmock(boto3).should_receive("client").with_args("dynamodb").and_return(mock).twice()
+    flexmock(index).should_receive("get_sites").with_args(mock).and_return(SITE_LIST).twice()
     bad_resp = flexmock(status_code=418, elapsed=mock)
     good_resp = flexmock(status_code=200, elapsed=mock)
-    flexmock(requests).should_receive("get").with_args("https://mock.io", timeout=5)\
-                                            .and_return(bad_resp).once()
-    flexmock(requests).should_receive("get").with_args("https://mock.com", timeout=5)\
-                                            .and_return(good_resp).once()
-    flexmock(index).should_receive("save_stats").and_return(None).once()
-    flexmock(index).should_receive("send_alert")\
-                   .with_args("123456789", list()).and_return(None).once()
+    flexmock(requests).should_receive("get").with_args("https://mock.io", timeout=index.MAX_TIME)\
+                                            .and_return(bad_resp).and_raise(ReadTimeout()).twice()
+    flexmock(requests).should_receive("get").with_args("https://mock.com", timeout=index.MAX_TIME)\
+                                            .and_return(good_resp).twice()
+    flexmock(index).should_receive("save_stats").and_return(None).twice()
+    flexmock(index).should_receive("send_alert").and_return(None).twice()
 
     fake_context = flexmock(
         invoked_function_arn="arn:aws:lambda:us-west-2:123456789:function:demo"
     )
+    assert index.site_monitor_handler(dict(), fake_context) is None
     assert index.site_monitor_handler(dict(), fake_context) is None

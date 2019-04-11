@@ -4,6 +4,7 @@ import os
 
 import boto3
 import requests
+from requests.exceptions import ReadTimeout
 
 IS_DEBUGGING = str(os.environ.get("DEBUGGING", "no")).strip().lower() == "yes"
 LOGGER = logging.getLogger()
@@ -11,6 +12,7 @@ LOGGER.setLevel(logging.DEBUG if IS_DEBUGGING else logging.INFO)
 LOGGER.debug("Loading lambda...")
 
 AWS_REGION = str(os.environ.get("AWS_REGION", "us-west-2")).strip()
+MAX_TIME = 3
 SITE_DYNAMO_TABLE = str(os.environ.get("SITE_DYNAMO_TABLE", "demo")).strip()
 STATS_DYNAMO_TABLE = str(os.environ.get("STATS_DYNAMO_TABLE", "demo")).strip()
 SNS_TOPIC = str(os.environ.get("SNS_TOPIC", "demo")).strip()
@@ -84,10 +86,16 @@ def site_monitor_handler(event, context):
     for site in sites:
         already_down = site["is_down"]
         site["check_time"] = datetime.now().isoformat()
-        resp = requests.get("https://{}".format(site["name"]), timeout=5)
-        site["is_down"] = bool(resp.status_code != 200)
-        site["response_code"] = int(resp.status_code)
-        site["response_time"] = float(resp.elapsed.total_seconds())
+        try:
+            resp = requests.get("https://{}".format(site["name"]), timeout=MAX_TIME)
+            site["is_down"] = bool(resp.status_code != 200)
+            site["response_code"] = int(resp.status_code)
+            site["response_time"] = float(resp.elapsed.total_seconds())
+        except ReadTimeout as err:
+            LOGGER.warning("Site check {} timed out: {}".format(site["name"], err))
+            site["is_down"] = True
+            site["response_code"] = 504
+            site["response_time"] = MAX_TIME
         LOGGER.debug(str(site))
 
         if site["is_down"] and not already_down:
