@@ -94,6 +94,8 @@ Resources:
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmTopicName}
       Period: 60
       Statistic: Sum
       Threshold: 0
