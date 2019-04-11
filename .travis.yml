@@ -8,7 +8,9 @@ branches:
 
 install: pip install -r requirements.txt
 
-script: cd functions && ./deploy.sh
+script: pushd functions && ./deploy.sh && popd
+
+after_success: coveralls --data_file functions/.coverage
 
 env:
   global:
