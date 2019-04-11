@@ -1,8 +1,9 @@
 #!/bin/bash
-set -ex
+set -e
 
 IGNORE_LIST="W3005"
 
+echo "Linting Templates..."
 cfn-lint -i $IGNORE_LIST -t templates/*.yaml
 
 pushd config

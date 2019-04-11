@@ -8,7 +8,7 @@ branches:
 
 install: pip install -r requirements.txt
 
-script: cd functions && ./deploy.sh
+script: pushd functions && ./deploy.sh && popd
 
 env:
   global:

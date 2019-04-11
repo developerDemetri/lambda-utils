@@ -31,6 +31,7 @@ def get_sites(dynamo_client):
     LOGGER.info("Successfully retrieved list of {} sites.".format(len(sites)))
     return sites
 
+
 def save_stats(dynamo_client, sites):
     LOGGER.info("Saving all Site info in Dynamo...")
     for site in sites:
@@ -57,6 +58,7 @@ def save_stats(dynamo_client, sites):
         LOGGER.debug("Successfully updated Stats table for {}.".format(site["name"]))
     LOGGER.info("Successfully saved all Site info in Dynamo.")
 
+
 def send_alert(account_id, down_site_list):
     if down_site_list:
         LOGGER.debug("Down Site List: {}".format(down_site_list))
@@ -76,6 +78,7 @@ def send_alert(account_id, down_site_list):
         LOGGER.info("Sucessfully alerted for {} site(s) down...".format(len(down_site_list)))
     else:
         LOGGER.info("No Sites to alert on :)")
+
 
 def site_monitor_handler(event, context):
     LOGGER.debug("Running site monitor...")

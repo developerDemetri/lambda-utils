@@ -4,7 +4,7 @@ import pytest
 import requests
 from requests.exceptions import HTTPError
 
-from . import index
+from src.StockTracker import index
 
 FAKE_URI = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=GDDY&apikey=demo"
 EXPECTED_RESULTS = ["GDDY: $75.11 +$0.90 (+1.21%)"]
@@ -26,6 +26,7 @@ def test_get_symbols():
 
     assert index.get_stock_symbols() == ["AMZN", "MSFT"]
 
+
 def test_send_results():
     fake_client = flexmock()
     fake_client.should_receive("publish").with_args(
@@ -35,6 +36,7 @@ def test_send_results():
     flexmock(boto3).should_receive("client").with_args("sns").and_return(fake_client).once()
 
     index.send_results(EXPECTED_RESULTS, "123456789")
+
 
 def test_stock_tracker_handler_bad_ticker():
     bad_event = {"symbol": "gdd&"}
@@ -51,6 +53,7 @@ def test_stock_tracker_handler_bad_resp():
     with pytest.raises(HTTPError):
         index.stock_tracker_handler(event, None)
 
+
 def test_stock_tracker_handler_empty_resp():
     event = {"symbol": "gddy"}
     fake_req = flexmock(ok=True, status_code=200)
@@ -62,6 +65,7 @@ def test_stock_tracker_handler_empty_resp():
 
     with pytest.raises(ValueError):
         index.stock_tracker_handler(event, None)
+
 
 def test_stock_tracker_handler_with_event():
     event = {"symbol": "gddy"}

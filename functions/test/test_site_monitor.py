@@ -5,7 +5,7 @@ from flexmock import flexmock
 import requests
 from requests.exceptions import ReadTimeout
 
-from . import index
+from src.SiteMonitor import index
 
 SITE_LIST = [
     {
@@ -39,6 +39,7 @@ def test_get_sites():
     ]}).once()
 
     assert index.get_sites(fake_client) == SITE_LIST
+
 
 def test_save_stats():
     fake_client = flexmock()
@@ -79,6 +80,7 @@ def test_save_stats():
 
     index.save_stats(fake_client, STAT_LIST)
 
+
 def test_send_alert():
     fake_client = flexmock()
     fake_client.should_receive("publish").with_args(
@@ -94,6 +96,7 @@ def test_send_alert():
 
     index.send_alert("123456789", [STAT_LIST[0]])
     index.send_alert("123456789", [])
+
 
 def test_site_monitor_handler():
     mock = flexmock()

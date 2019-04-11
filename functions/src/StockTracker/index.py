@@ -25,6 +25,7 @@ def get_stock_symbols():
         symbols.append(symbol.strip().upper())
     return symbols
 
+
 def send_results(results, account_id):
     if results:
         LOGGER.info("Sending results to SNS Topic: {}...")
@@ -36,6 +37,7 @@ def send_results(results, account_id):
         LOGGER.info("Successfully sent results to SNS Topic: {}.")
     else:
         LOGGER.warning("No results to send!")
+
 
 def stock_tracker_handler(event, context):
     LOGGER.info("Running stock tracker...")
