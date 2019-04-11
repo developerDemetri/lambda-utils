@@ -114,4 +114,3 @@ def test_site_monitor_handler():
     )
     assert index.site_monitor_handler(dict(), fake_context) is None
     assert index.site_monitor_handler(dict(), fake_context) is None
-
