@@ -10,22 +10,27 @@ Useful little Lambda collection
 
 ## Repository Structure
 
-Each directory under [`functions`](https://github.com/developerDemetri/lambda-utils/tree/master/functions) is the name of the Lambda Function that it contains.
+Lambda code is defined under [`functions`](https://github.com/developerDemetri/lambda-utils/tree/master/functions).
 
 Each Lambda has:
 
-1) `__init__.py`, `index.py`, and other required source code files
+1) `__init__.py`, `index.py`, and other required source code files under [`src`](https://github.com/developerDemetri/lambda-utils/tree/master/functions/src)/<LambaName>
 
-2) `test_<lambda_name>.py` file that defines pytests under [`test`](https://github.com/developerDemetri/lambda-utils/tree/master/functions/test)
+2) `requirements.txt` that defines dependencies under [`src`](https://github.com/developerDemetri/lambda-utils/tree/master/functions/src)/<LambaName>
 
-3) `requirements.txt` that defines dependencies
+3) `test_<lambda_name>.py` file that defines pytests under [`test`](https://github.com/developerDemetri/lambda-utils/tree/master/functions/test)
 
 
 ```
-LambdaName
-├── __init__.py
-├── index.py
-└── requirements.txt
+functions
+├── src
+│   └── LambdaName
+│       ├── __init__.py
+│       ├── index.py
+│       └── requirements.txt
+└── test
+    └── test_lambda_name.py
 ```
+
 
 The [`sceptre`](https://github.com/developerDemetri/lambda-utils/tree/master/sceptre) directory contains a [Sceptre](https://sceptre.cloudreach.com/latest/about.html) setup for orchestrating AWS Resources.
