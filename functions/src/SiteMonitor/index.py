@@ -3,6 +3,7 @@ import logging
 import os
 
 import boto3
+from pytz import timezone
 import requests
 from requests.exceptions import ReadTimeout
 
@@ -13,42 +14,28 @@ LOGGER.debug("Loading lambda...")
 
 AWS_REGION = str(os.environ.get("AWS_REGION", "us-west-2")).strip()
 MAX_TIME = 3
-SITE_DYNAMO_TABLE = str(os.environ.get("SITE_DYNAMO_TABLE", "demo")).strip()
+SITES_PARAM = str(os.environ.get("SITES_PARAM", "/Demo/Sites")).strip()
 STATS_DYNAMO_TABLE = str(os.environ.get("STATS_DYNAMO_TABLE", "demo")).strip()
-SNS_TOPIC = str(os.environ.get("SNS_TOPIC", "demo")).strip()
+TIMEZONE = str(os.environ.get("TIMEZONE", "US/Pacific")).strip()
 
 
-def get_sites(dynamo_client):
+def get_sites():
     LOGGER.info("Retrieving list of sites...")
-    sites = []
-    for item in dynamo_client.scan(TableName=SITE_DYNAMO_TABLE, ConsistentRead=True)["Items"]:
-        sites.append({
-            "id": int(item["site_id"]["N"]),
-            "name": str(item["site_name"]["S"]),
-            "is_down": bool(item["is_down"]["BOOL"])
-        })
-    LOGGER.debug(str(sites))
-    LOGGER.info("Successfully retrieved list of {} sites.".format(len(sites)))
+    ssm_client = boto3.client("ssm", region_name=AWS_REGION)
+    sites = list()
+    for site in ssm_client.get_parameter(Name=SITES_PARAM)["Parameter"]["Value"].split(","):
+        sites.append(site.strip().lower())
     return sites
 
 
-def save_stats(dynamo_client, sites):
+def save_stats(sites):
     LOGGER.info("Saving all Site info in Dynamo...")
+    dynamo_client = boto3.client("dynamodb", region_name=AWS_REGION)
     for site in sites:
-        LOGGER.info("Saving info in Dynamo for {}...".format(site["name"]))
-        dynamo_client.update_item(
-            TableName=SITE_DYNAMO_TABLE,
-            Key={"site_id": {"N": str(site["id"])}},
-            UpdateExpression="SET is_down = :val",
-            ExpressionAttributeValues={":val": {"BOOL": site["is_down"]}}
-        )
-        LOGGER.debug("Successfully updated Site table for {}.".format(site["name"]))
-
         dynamo_client.put_item(
             TableName=STATS_DYNAMO_TABLE,
             Item={
-                "site_id": {"N": str(site["id"])},
-                "site_name": {"S": site["name"]},
+                "name": {"S": site["name"]},
                 "timestamp": {"S": site["check_time"]},
                 "is_down": {"BOOL": site["is_down"]},
                 "response_code": {"N": str(site["response_code"])},
@@ -59,52 +46,24 @@ def save_stats(dynamo_client, sites):
     LOGGER.info("Successfully saved all Site info in Dynamo.")
 
 
-def send_alert(account_id, down_site_list):
-    if down_site_list:
-        LOGGER.debug("Down Site List: {}".format(down_site_list))
-        sns_client = boto3.client("sns")
-        LOGGER.warning("Alerting for {} site(s) down...".format(len(down_site_list)))
-        message_parts = ["The following site(s) returned unhealthy responses:"]
-        for site_info in down_site_list:
-            message_parts.append("\t{}\t{}".format(site_info["name"], site_info["response_code"]))
-        message_parts.append("DeveloperDemetri Site Monitor")
-        LOGGER.debug("\n".join(message_parts))
-
-        sns_client.publish(
-            TopicArn="arn:aws:sns:{}:{}:{}".format(AWS_REGION, account_id, SNS_TOPIC),
-            Subject="Site Monitor Alert: Webite(s) Down",
-            Message="\n".join(message_parts)
-        )
-        LOGGER.info("Sucessfully alerted for {} site(s) down...".format(len(down_site_list)))
-    else:
-        LOGGER.info("No Sites to alert on :)")
-
-
 def site_monitor_handler(event, context):
     LOGGER.debug("Running site monitor...")
-    dynamo_client = boto3.client("dynamodb")
-
-    crashed_sites = []
-    sites = get_sites(dynamo_client)
+    sites = get_sites()
+    results = list()
     for site in sites:
-        already_down = site["is_down"]
-        site["check_time"] = datetime.now().isoformat()
+        site_results = dict({"name": site})
+        site_results["check_time"] = datetime.now(timezone(TIMEZONE)).isoformat()
         try:
-            resp = requests.get("https://{}".format(site["name"]), timeout=MAX_TIME)
-            site["is_down"] = bool(resp.status_code != 200)
-            site["response_code"] = int(resp.status_code)
-            site["response_time"] = float(resp.elapsed.total_seconds())
+            resp = requests.get("https://{}".format(site), timeout=MAX_TIME)
+            site_results["is_down"] = bool(resp.status_code != 200)
+            site_results["response_code"] = int(resp.status_code)
+            site_results["response_time"] = float(resp.elapsed.total_seconds())
         except ReadTimeout as err:
-            LOGGER.warning("Site check {} timed out: {}".format(site["name"], err))
-            site["is_down"] = True
-            site["response_code"] = 504
-            site["response_time"] = MAX_TIME
-        LOGGER.debug(str(site))
-
-        if site["is_down"] and not already_down:
-            crashed_sites.append(site)
-
-    account_id = context.invoked_function_arn.split(":")[4]
-    save_stats(dynamo_client, sites)
-    send_alert(account_id, crashed_sites)
+            LOGGER.warning("Site check {} timed out: {}".format(site, err))
+            site_results["is_down"] = True
+            site_results["response_code"] = 504
+            site_results["response_time"] = MAX_TIME
+        LOGGER.debug(site_results)
+        results.append(site_results)
+    save_stats(results)
     LOGGER.info("Successfully ran site monitor.")

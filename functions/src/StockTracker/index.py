@@ -20,7 +20,7 @@ TICKER_RE = re.compile("^[A-Z]{1,5}$")
 
 def get_stock_symbols():
     ssm_client = boto3.client("ssm", region_name=AWS_REGION)
-    symbols = []
+    symbols = list()
     for symbol in ssm_client.get_parameter(Name=SYMBOLS_PARAM)["Parameter"]["Value"].split(","):
         symbols.append(symbol.strip().upper())
     return symbols
@@ -46,7 +46,7 @@ def stock_tracker_handler(event, context):
     else:
         stock_symbols = get_stock_symbols()
 
-    results = []
+    results = list()
     for stock_symbol in stock_symbols:
         if TICKER_RE.fullmatch(stock_symbol) is None:
             err_msg = "Invalid stock ticker: {}!".format(stock_symbol)
