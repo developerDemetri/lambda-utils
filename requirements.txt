@@ -41,7 +41,7 @@ python-coveralls==2.9.1
 python-dateutil==2.8.0
 PyYAML==4.2b4
 requests==2.21.0
-rsa==3.4.2
+rsa==4.1
 s3transfer==0.2.0
 sceptre==2.1.0
 six==1.12.0
